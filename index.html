@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Расписание · Software Engineering</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #f5f6f8;
+            --surface: #ffffff;
+            --surface-soft: #f8f9fb;
+            --text: #17181a;
+            --muted: #73777d;
+            --muted-light: #a3a7ad;
+            --border: #e7e8eb;
+            --accent: #1769e0;
+            --accent-soft: #eaf2ff;
+            --accent-border: #cfe0ff;
+            --success: #18864b;
+            --success-soft: #e9f8ef;
+            --shadow: 0 8px 30px rgba(20, 25, 35, 0.06);
+            --shadow-hover: 0 12px 35px rgba(20, 25, 35, 0.1);
+            --radius: 18px;
+        }
+
+        [data-theme="dark"] {
+            --bg: #101114;
+            --surface: #181a1f;
+            --surface-soft: #202228;
+            --text: #f3f4f6;
+            --muted: #9da1aa;
+            --muted-light: #6f737c;
+            --border: #2b2e35;
+            --accent: #72a8ff;
+            --accent-soft: #1c2d49;
+            --accent-border: #294a78;
+            --success: #57c987;
+            --success-soft: #173524;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+            --shadow-hover: 0 12px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .app {
+            width: min(1500px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 34px 0 50px;
+        }
+
+        /* HEADER */
+
+        .header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 25px;
+            margin-bottom: 28px;
+        }
+
+        .eyebrow {
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: clamp(28px, 4vw, 42px);
+            line-height: 1.1;
+            letter-spacing: -0.035em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-top: 9px;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-button,
+        .today-button,
+        .nav-button {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            height: 42px;
+            border-radius: 12px;
+            transition: 0.18s ease;
+        }
+
+        .icon-button {
+            width: 42px;
+            display: grid;
+            place-items: center;
+        }
+
+        .icon-button:hover,
+        .today-button:hover,
+        .nav-button:hover {
+            border-color: var(--accent-border);
+            color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .icon-button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* NAVIGATION */
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .week-navigation {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-button {
+            width: 42px;
+            display: grid;
+            place-items: center;
+        }
+
+        .nav-button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .today-button {
+            padding: 0 16px;
+            font-weight: 600;
+        }
+
+        .week-label {
+            min-width: 180px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .view-switcher {
+            display: flex;
+            padding: 4px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: var(--surface);
+        }
+
+        .view-btn {
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            padding: 8px 15px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.18s ease;
+        }
+
+        .view-btn.active {
+            background: var(--text);
+            color: var(--surface);
+        }
+
+        /* SUMMARY */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1.35fr 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .summary-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 17px 18px;
+            min-height: 95px;
+        }
+
+        .summary-label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .summary-small {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        /* CONTROLS */
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-wrapper svg {
+            position: absolute;
+            width: 17px;
+            height: 17px;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+        }
+
+        .search {
+            width: 100%;
+            height: 44px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: var(--surface);
+            color: var(--text);
+            outline: none;
+            padding: 0 15px 0 43px;
+            transition: 0.18s ease;
+        }
+
+        .search:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .filter {
+            min-width: 250px;
+            height: 44px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: var(--surface);
+            color: var(--text);
+            outline: none;
+        }
+
+        .filter:focus {
+            border-color: var(--accent);
+        }
+
+        /* WEEK */
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(175px, 1fr));
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .day-column {
+            min-width: 175px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .day-header {
+            padding: 14px 14px 13px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: var(--surface);
+        }
+
+        .day-column.today .day-header {
+            background: var(--accent-soft);
+            border-color: var(--accent-border);
+        }
+
+        .day-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .day-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .day-date {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .day-count {
+            color: var(--muted);
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        .day-column.past {
+            opacity: 0.68;
+        }
+
+        .day-column.today {
+            opacity: 1;
+        }
+
+        /* CLASS CARD */
+
+        .class-list {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .class-card {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 15px;
+            transition:
+                transform 0.18s ease,
+                box-shadow 0.18s ease,
+                border-color 0.18s ease;
+        }
+
+        .class-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .class-card.current {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .current-label {
+            display: none;
+            position: absolute;
+            right: 12px;
+            top: 11px;
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .class-card.current .current-label {
+            display: block;
+        }
+
+        .class-time {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 10px;
+        }
+
+        .class-subject {
+            font-size: 14px;
+            line-height: 1.38;
+            font-weight: 650;
+            letter-spacing: -0.015em;
+            margin-bottom: 13px;
+        }
+
+        .class-info {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .info-row svg {
+            flex: 0 0 auto;
+            width: 14px;
+            height: 14px;
+        }
+
+        .room {
+            color: var(--text);
+            font-weight: 650;
+        }
+
+        .teacher {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .class-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            height: 23px;
+            padding: 0 8px;
+            border-radius: 7px;
+            background: var(--surface-soft);
+            color: var(--muted);
+            border: 1px solid var(--border);
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .badge.practice {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-color: var(--accent-border);
+        }
+
+        .course-code {
+            color: var(--muted-light);
+            font-size: 9px;
+            font-weight: 500;
+            text-align: right;
+            word-break: break-word;
+        }
+
+        /* GAP */
+
+        .break {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted-light);
+            font-size: 9px;
+            padding: 3px 4px;
+        }
+
+        .break::before,
+        .break::after {
+            content: "";
+            height: 1px;
+            background: var(--border);
+            flex: 1;
+        }
+
+        /* DAY VIEW */
+
+        .day-view {
+            display: none;
+        }
+
+        .day-view.active {
+            display: block;
+        }
+
+        .day-view-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+        }
+
+        .day-view-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .day-view-title {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .day-view-subtitle {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .day-classes {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .day-classes .class-card {
+            padding: 20px;
+        }
+
+        /* EMPTY */
+
+        .empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            color: var(--muted);
+            text-align: center;
+            border: 1px dashed var(--border);
+            border-radius: 16px;
+            background: var(--surface-soft);
+        }
+
+        .empty svg {
+            width: 25px;
+            height: 25px;
+            margin-bottom: 10px;
+            color: var(--muted-light);
+        }
+
+        .empty-title {
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .empty-text {
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        /* MOBILE DAY SELECTOR */
+
+        .mobile-day-selector {
+            display: none;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 3px;
+            scrollbar-width: none;
+            margin-bottom: 16px;
+        }
+
+        .mobile-day-selector::-webkit-scrollbar {
+            display: none;
+        }
+
+        .day-selector-btn {
+            flex: 0 0 auto;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            border-radius: 11px;
+            min-width: 47px;
+            height: 39px;
+            font-size: 11px;
+            font-weight: 650;
+        }
+
+        .day-selector-btn.active {
+            background: var(--text);
+            border-color: var(--text);
+            color: var(--surface);
+        }
+
+        .day-selector-btn.today:not(.active) {
+            border-color: var(--accent-border);
+            color: var(--accent);
+        }
+
+        /* FOOTER */
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            color: var(--muted);
+            font-size: 10px;
+            margin-top: 22px;
+            padding: 0 4px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 1250px) {
+            .week-grid {
+                grid-template-columns: repeat(4, minmax(210px, 1fr));
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .app {
+                width: min(100% - 24px, 650px);
+                padding: 20px 0 35px;
+            }
+
+            .header {
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                position: absolute;
+                right: 12px;
+                top: 18px;
+            }
+
+            .subtitle {
+                max-width: 230px;
+            }
+
+            .toolbar {
+                margin-top: 20px;
+            }
+
+            .week-navigation {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .week-label {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .view-switcher {
+                width: 100%;
+            }
+
+            .view-btn {
+                flex: 1;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .filter {
+                width: 100%;
+            }
+
+            .mobile-day-selector {
+                display: flex;
+            }
+
+            .week-view {
+                display: none;
+            }
+
+            .day-view {
+                display: block;
+            }
+
+            .day-view-card {
+                padding: 16px;
+                border-radius: 17px;
+            }
+
+            .day-view-header {
+                margin-bottom: 16px;
+            }
+
+            .day-classes {
+                grid-template-columns: 1fr;
+            }
+
+            .footer {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app {
+                width: calc(100% - 20px);
+            }
+
+            .header {
+                margin-bottom: 20px;
+            }
+
+            h1 {
+                font-size: 29px;
+            }
+
+            .summary-grid {
+                gap: 8px;
+            }
+
+            .summary-card {
+                padding: 14px;
+                min-height: 86px;
+            }
+
+            .summary-value {
+                font-size: 16px;
+            }
+
+            .summary-small {
+                font-size: 10px;
+            }
+
+            .day-view-title {
+                font-size: 19px;
+            }
+
+            .class-card {
+                border-radius: 15px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div>
+            <div class="eyebrow">Academic Schedule</div>
+            <h1>Расписание</h1>
+            <p class="subtitle">Магистратура · Software Engineering</p>
+        </div>
+
+        <div class="header-actions">
+            <button
+                class="icon-button"
+                id="themeToggle"
+                aria-label="Переключить тему"
+                title="Тёмная / светлая тема">
+            </button>
+        </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <div class="toolbar">
+
+        <div class="week-navigation">
+            <button class="nav-button" id="prevWeek" aria-label="Предыдущая неделя">
+                <i data-lucide="chevron-left"></i>
+            </button>
+
+            <div class="week-label" id="weekLabel"></div>
+
+            <button class="nav-button" id="nextWeek" aria-label="Следующая неделя">
+                <i data-lucide="chevron-right"></i>
+            </button>
+
+            <button class="today-button" id="todayBtn">
+                Сегодня
+            </button>
+        </div>
+
+        <div class="view-switcher">
+            <button class="view-btn active" data-view="week">Неделя</button>
+            <button class="view-btn" data-view="day">День</button>
+        </div>
+
+    </div>
+
+    <!-- MOBILE DAY SELECTOR -->
+    <div class="mobile-day-selector" id="mobileDaySelector"></div>
+
+    <!-- SUMMARY -->
+    <section class="summary-grid">
+
+        <div class="summary-card">
+            <div class="summary-label">Сегодня</div>
+            <div class="summary-value" id="todaySummary">—</div>
+            <div class="summary-small" id="todayTimeSummary">—</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">Следующее занятие</div>
+            <div class="summary-value" id="nextClassTime">—</div>
+            <div class="summary-small" id="nextClassName">—</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">Эта неделя</div>
+            <div class="summary-value" id="weekClasses">19 занятий</div>
+            <div class="summary-small" id="weekSubjects">4 предмета</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">Сейчас</div>
+            <div class="summary-value" id="currentStatus">Свободно</div>
+            <div class="summary-small" id="currentRoom">—</div>
+        </div>
+
+    </section>
+
+    <!-- CONTROLS -->
+    <section class="controls">
+
+        <div class="search-wrapper">
+            <i data-lucide="search"></i>
+            <input
+                type="search"
+                class="search"
+                id="searchInput"
+                placeholder="Поиск по расписанию..."
+                aria-label="Поиск по расписанию">
+        </div>
+
+        <select class="filter" id="subjectFilter" aria-label="Фильтр по предмету">
+            <option value="all">Все предметы</option>
+        </select>
+
+    </section>
+
+    <!-- WEEK VIEW -->
+    <main class="week-view" id="weekView">
+        <div class="week-grid" id="weekGrid"></div>
+    </main>
+
+    <!-- DAY VIEW -->
+    <main class="day-view" id="dayView">
+
+        <div class="day-view-card">
+
+            <div class="day-view-header">
+                <div>
+                    <div class="day-view-title" id="dayViewTitle"></div>
+                    <div class="day-view-subtitle" id="dayViewSubtitle"></div>
+                </div>
+            </div>
+
+            <div class="day-classes" id="dayClasses"></div>
+
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <span>19 занятий · 4 предмета</span>
+        <span>Расписание обновляется автоматически</span>
+    </footer>
+
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script>
+    /* =========================================================
+       DATA
+    ========================================================= */
+
+    const schedule = [
+        {
+            day: "monday",
+            start: "20:00",
+            end: "20:50",
+            subject: "Безопасная архитектура и дизайн программного обеспечения",
+            type: "lecture",
+            teacher: "Жумабаева А.",
+            room: "C1.1.365P",
+            code: "SSAD53-EN-L1"
+        },
+        {
+            day: "monday",
+            start: "21:00",
+            end: "21:50",
+            subject: "Безопасная архитектура и дизайн программного обеспечения",
+            type: "lecture",
+            teacher: "Жумабаева А.",
+            room: "C1.1.365P",
+            code: "SSAD53-EN-L1"
+        },
+
+        {
+            day: "tuesday",
+            start: "20:00",
+            end: "20:50",
+            subject: "Иностранный язык (профессиональный) (C1)",
+            type: "practice",
+            teacher: "Орманова А.Б.",
+            room: "C1.1.365P",
+            code: "FL(PROFESSIONAL)42-EN-P13"
+        },
+        {
+            day: "tuesday",
+            start: "21:00",
+            end: "21:50",
+            subject: "Иностранный язык (профессиональный) (C1)",
+            type: "practice",
+            teacher: "Орманова А.Б.",
+            room: "C1.1.365P",
+            code: "FL(PROFESSIONAL)42-EN-P13"
+        },
+
+        {
+            day: "wednesday",
+            start: "20:00",
+            end: "20:50",
+            subject: "Психология управления",
+            type: "lecture",
+            teacher: "Исаханова А.А.",
+            room: "C1.3.370L",
+            code: "PM42-RU-L3"
+        },
+        {
+            day: "wednesday",
+            start: "21:00",
+            end: "21:50",
+            subject: "Психология управления",
+            type: "lecture",
+            teacher: "Исаханова А.А.",
+            room: "C1.3.370L",
+            code: "PM42-RU-L3"
+        },
+
+        {
+            day: "thursday",
+            start: "19:00",
+            end: "19:50",
+            subject: "Педагогика высшей школы",
+            type: "lecture",
+            teacher: "Шон П.",
+            room: "C1.1.326",
+            code: "HEP42-EN-L6"
+        },
+        {
+            day: "thursday",
+            start: "20:00",
+            end: "20:50",
+            subject: "Педагогика высшей школы",
+            type: "lecture",
+            teacher: "Шон П.",
+            room: "C1.1.326",
+            code: "HEP42-EN-L6"
+        },
+
+        {
+            day: "friday",
+            start: "18:00",
+            end: "18:50",
+            subject: "Психология управления",
+            type: "practice",
+            teacher: "Исаханова А.А.",
+            room: "C1.1.234P",
+            code: "PM42-RU-P10"
+        },
+        {
+            day: "friday",
+            start: "19:00",
+            end: "19:50",
+            subject: "Психология управления",
+            type: "practice",
+            teacher: "Исаханова А.А.",
+            room: "C1.1.234P",
+            code: "PM42-RU-P10"
+        },
+        {
+            day: "friday",
+            start: "20:00",
+            end: "20:50",
+            subject: "Педагогика высшей школы",
+            type: "practice",
+            teacher: "Шон П.",
+            room: "C1.2.230P",
+            code: "HEP42-EN-P13"
+        },
+        {
+            day: "friday",
+            start: "21:00",
+            end: "21:50",
+            subject: "Педагогика высшей школы",
+            type: "practice",
+            teacher: "Шон П.",
+            room: "C1.2.230P",
+            code: "HEP42-EN-P13"
+        },
+
+        {
+            day: "saturday",
+            start: "12:00",
+            end: "12:50",
+            subject: "Иностранный язык (профессиональный) (C1)",
+            type: "practice",
+            teacher: "Орманова А.Б.",
+            room: "C1.2.226P",
+            code: "FL(PROFESSIONAL)42-EN-P13"
+        },
+        {
+            day: "saturday",
+            start: "13:05",
+            end: "13:55",
+            subject: "Иностранный язык (профессиональный) (C1)",
+            type: "practice",
+            teacher: "Орманова А.Б.",
+            room: "C1.2.226P",
+            code: "FL(PROFESSIONAL)42-EN-P13"
+        },
+        {
+            day: "saturday",
+            start: "14:00",
+            end: "14:50",
+            subject: "Безопасная архитектура и дизайн программного обеспечения",
+            type: "lecture",
+            teacher: "Жумабаева А.",
+            room: "C1.2.227P",
+            code: "SSAD53-EN-L1"
+        },
+        {
+            day: "saturday",
+            start: "15:00",
+            end: "15:50",
+            subject: "Безопасная архитектура и дизайн программного обеспечения",
+            type: "practice",
+            teacher: "Жумабаева А.",
+            room: "C1.2.227P",
+            code: "SSAD53-EN-P1"
+        },
+
+        {
+            day: "saturday",
+            start: "16:00",
+            end: "16:50",
+            subject: "Безопасная архитектура и дизайн программного обеспечения",
+            type: "practice",
+            teacher: "Жумабаева А.",
+            room: "C1.2.227P",
+            code: "SSAD53-EN-P1"
+        }
+    ];
+
+    const dayNames = {
+        monday: "Понедельник",
+        tuesday: "Вторник",
+        wednesday: "Среда",
+        thursday: "Четверг",
+        friday: "Пятница",
+        saturday: "Суббота",
+        sunday: "Воскресенье"
+    };
+
+    const dayShort = {
+        monday: "ПН",
+        tuesday: "ВТ",
+        wednesday: "СР",
+        thursday: "ЧТ",
+        friday: "ПТ",
+        saturday: "СБ",
+        sunday: "ВС"
+    };
+
+    const dayOrder = [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+    ];
+
+    const dayIndex = {
+        monday: 1,
+        tuesday: 2,
+        wednesday: 3,
+        thursday: 4,
+        friday: 5,
+        saturday: 6,
+        sunday: 0
+    };
+
+    let currentWeekOffset = 0;
+    let selectedDay = getTodayKey();
+    let currentView = window.innerWidth <= 800 ? "day" : "week";
+    let searchQuery = "";
+    let subjectFilter = "all";
+
+    /* =========================================================
+       HELPERS
+    ========================================================= */
+
+    function getTodayKey() {
+        const day = new Date().getDay();
+
+        return Object.keys(dayIndex).find(
+            key => dayIndex[key] === day
+        ) || "monday";
+    }
+
+    function timeToMinutes(time) {
+        const [hours, minutes] = time.split(":").map(Number);
+        return hours * 60 + minutes;
+    }
+
+    function getDateForDay(dayKey, offset = 0) {
+        const today = new Date();
+        const currentDay = today.getDay();
+
+        let mondayDiff = currentDay === 0 ? -6 : 1 - currentDay;
+
+        const date = new Date(today);
+        date.setHours(0, 0, 0, 0);
+        date.setDate(
+            today.getDate() +
+            mondayDiff +
+            (dayIndex[dayKey] === 0 ? 6 : dayIndex[dayKey] - 1) +
+            offset * 7
+        );
+
+        return date;
+    }
+
+    function formatDate(date) {
+        return date.toLocaleDateString("ru-RU", {
+            day: "numeric",
+            month: "short"
+        });
+    }
+
+    function formatWeekRange() {
+        const monday = getDateForDay("monday", currentWeekOffset);
+        const sunday = getDateForDay("sunday", currentWeekOffset);
+
+        const start = monday.toLocaleDateString("ru-RU", {
+            day: "numeric",
+            month: "long"
+        });
+
+        const end = sunday.toLocaleDateString("ru-RU", {
+            day: "numeric",
+            month: "long"
+        });
+
+        return `${start} — ${end}`;
+    }
+
+    function isToday(dayKey) {
+        return dayKey === getTodayKey() && currentWeekOffset === 0;
+    }
+
+    function getClasses(dayKey) {
+        return schedule
+            .filter(item => item.day === dayKey)
+            .filter(item => {
+                const text = [
+                    item.subject,
+                    item.teacher,
+                    item.room,
+                    item.code
+                ].join(" ").toLowerCase();
+
+                const matchesSearch =
+                    !searchQuery ||
+                    text.includes(searchQuery.toLowerCase());
+
+                const matchesSubject =
+                    subjectFilter === "all" ||
+                    item.subject === subjectFilter;
+
+                return matchesSearch && matchesSubject;
+            })
+            .sort(
+                (a, b) =>
+                    timeToMinutes(a.start) -
+                    timeToMinutes(b.start)
+            );
+    }
+
+    function getCurrentClass() {
+        const todayKey = getTodayKey();
+
+        if (currentWeekOffset !== 0) {
+            return null;
+        }
+
+        const now = new Date();
+        const currentMinutes =
+            now.getHours() * 60 + now.getMinutes();
+
+        return schedule.find(item => {
+            if (item.day !== todayKey) return false;
+
+            const start = timeToMinutes(item.start);
+            const end = timeToMinutes(item.end);
+
+            return (
+                currentMinutes >= start &&
+                currentMinutes < end
+            );
+        }) || null;
+    }
+
+    function getNextClass() {
+        const now = new Date();
+        const todayKey = getTodayKey();
+
+        const currentMinutes =
+            now.getHours() * 60 + now.getMinutes();
+
+        const todayClasses = schedule
+            .filter(item => item.day === todayKey)
+            .filter(item =>
+                timeToMinutes(item.start) > currentMinutes
+            )
+            .sort(
+                (a, b) =>
+                    timeToMinutes(a.start) -
+                    timeToMinutes(b.start)
+            );
+
+        if (todayClasses.length) {
+            return todayClasses[0];
+        }
+
+        const todayIndex = dayOrder.indexOf(todayKey);
+
+        for (let i = 1; i <= 7; i++) {
+            const nextIndex = (todayIndex + i) % 7;
+            const nextDay = dayOrder[nextIndex];
+
+            const classes = schedule
+                .filter(item => item.day === nextDay)
+                .sort(
+                    (a, b) =>
+                        timeToMinutes(a.start) -
+                        timeToMinutes(b.start)
+                );
+
+            if (classes.length) {
+                return classes[0];
+            }
+        }
+
+        return null;
+    }
+
+    function getMinutesUntil(time) {
+        const now = new Date();
+
+        const currentMinutes =
+            now.getHours() * 60 + now.getMinutes();
+
+        return timeToMinutes(time) - currentMinutes;
+    }
+
+    /* =========================================================
+       CARD
+    ========================================================= */
+
+    function createClassCard(item) {
+        const current = getCurrentClass() === item;
+
+        const card = document.createElement("article");
+
+        card.className =
+            "class-card" +
+            (current ? " current" : "");
+
+        card.innerHTML = `
+            <span class="current-label">Сейчас</span>
+
+            <div class="class-time">
+                ${item.start} — ${item.end}
+            </div>
+
+            <div class="class-subject">
+                ${item.subject}
+            </div>
+
+            <div class="class-info">
+
+                <div class="info-row">
+                    <i data-lucide="map-pin"></i>
+                    <span class="room">${item.room}</span>
+                </div>
+
+                <div class="info-row">
+                    <i data-lucide="user-round"></i>
+                    <span class="teacher">${item.teacher}</span>
+                </div>
+
+            </div>
+
+            <div class="class-bottom">
+
+                <span class="badge ${item.type === "practice" ? "practice" : ""}">
+                    ${item.type === "practice" ? "ПРАКТИКА" : "ЛЕКЦИЯ"}
+                </span>
+
+                <span class="course-code">
+                    ${item.code}
+                </span>
+
+            </div>
+        `;
+
+        return card;
+    }
+
+    /* =========================================================
+       WEEK RENDER
+    ========================================================= */
+
+    function renderWeek() {
+        const container = document.getElementById("weekGrid");
+
+        container.innerHTML = "";
+
+        dayOrder.forEach(dayKey => {
+
+            const classes = getClasses(dayKey);
+            const date = getDateForDay(dayKey, currentWeekOffset);
+
+            const column = document.createElement("section");
+
+            let state = "";
+
+            if (isToday(dayKey)) {
+                state = " today";
+            } else if (date < new Date()) {
+                state = " past";
+            }
+
+            column.className = "day-column" + state;
+
+            column.innerHTML = `
+                <div class="day-header">
+
+                    <div class="day-top">
+                        <div class="day-name">
+                            ${dayNames[dayKey]}
+                        </div>
+
+                        <div class="day-count">
+                            ${classes.length}
+                            ${getPlural(classes.length, "занятие", "занятия", "занятий")}
+                        </div>
+                    </div>
+
+                    <div class="day-date">
+                        ${formatDate(date)}
+                    </div>
+
+                </div>
+
+                <div class="class-list"></div>
+            `;
+
+            const list =
+                column.querySelector(".class-list");
+
+            if (!classes.length) {
+                list.appendChild(createEmptyState("Нет занятий"));
+            } else {
+                classes.forEach((item, index) => {
+
+                    if (index > 0) {
+                        const previous = classes[index - 1];
+
+                        const gap =
+                            timeToMinutes(item.start) -
+                            timeToMinutes(previous.end);
+
+                        if (gap > 0) {
+                            const breakElement =
+                                document.createElement("div");
+
+                            breakElement.className = "break";
+
+                            breakElement.textContent =
+                                formatBreak(gap);
+
+                            list.appendChild(breakElement);
+                        }
+                    }
+
+                    list.appendChild(
+                        createClassCard(item)
+                    );
+                });
+            }
+
+            container.appendChild(column);
+        });
+
+        lucide.createIcons();
+    }
+
+    /* =========================================================
+       DAY RENDER
+    ========================================================= */
+
+    function renderDay() {
+        const classes = getClasses(selectedDay);
+
+        document.getElementById("dayViewTitle").textContent =
+            dayNames[selectedDay];
+
+        document.getElementById("dayViewSubtitle").textContent =
+            `${classes.length} ${getPlural(classes.length, "занятие", "занятия", "занятий")}`;
+
+        const container =
+            document.getElementById("dayClasses");
+
+        container.innerHTML = "";
+
+        if (!classes.length) {
+            container.appendChild(
+                createEmptyState(
+                    searchQuery || subjectFilter !== "all"
+                        ? "Ничего не найдено"
+                        : "Сегодня занятий нет"
+                )
+            );
+        } else {
+            classes.forEach(item => {
+                container.appendChild(
+                    createClassCard(item)
+                );
+            });
+        }
+
+        lucide.createIcons();
+    }
+
+    /* =========================================================
+       EMPTY
+    ========================================================= */
+
+    function createEmptyState(title) {
+        const element =
+            document.createElement("div");
+
+        element.className = "empty";
+
+        element.innerHTML = `
+            <i data-lucide="calendar-off"></i>
+            <div class="empty-title">${title}</div>
+            <div class="empty-text">
+                Попробуйте выбрать другой день или изменить фильтр
+            </div>
+        `;
+
+        return element;
+    }
+
+    /* =========================================================
+       MOBILE DAY SELECTOR
+    ========================================================= */
+
+    function renderMobileDays() {
+        const container =
+            document.getElementById("mobileDaySelector");
+
+        container.innerHTML = "";
+
+        dayOrder.forEach(dayKey => {
+
+            const button =
+                document.createElement("button");
+
+            button.className =
+                "day-selector-btn" +
+                (selectedDay === dayKey ? " active" : "") +
+                (isToday(dayKey) ? " today" : "");
+
+            button.textContent = dayShort[dayKey];
+
+            button.addEventListener("click", () => {
+                selectedDay = dayKey;
+                renderAll();
+            });
+
+            container.appendChild(button);
+        });
+    }
+
+    /* =========================================================
+       SUMMARY
+    ========================================================= */
+
+    function renderSummary() {
+
+        const todayKey = getTodayKey();
+
+        const todayClasses = schedule
+            .filter(item => item.day === todayKey)
+            .sort(
+                (a, b) =>
+                    timeToMinutes(a.start) -
+                    timeToMinutes(b.start)
+            );
+
+        const count = todayClasses.length;
+
+        document.getElementById("todaySummary").textContent =
+            `${count} ${getPlural(count, "занятие", "занятия", "занятий")}`;
+
+        if (count) {
+            document.getElementById("todayTimeSummary").textContent =
+                `Первое · ${todayClasses[0].start}  •  Последнее · ${todayClasses[todayClasses.length - 1].end}`;
+        } else {
+            document.getElementById("todayTimeSummary").textContent =
+                "Сегодня занятий нет";
+        }
+
+        const current = getCurrentClass();
+
+        const currentStatus =
+            document.getElementById("currentStatus");
+
+        const currentRoom =
+            document.getElementById("currentRoom");
+
+        if (current) {
+            currentStatus.textContent = "Сейчас";
+            currentRoom.textContent =
+                `${current.subject} · ${current.room}`;
+        } else {
+            currentStatus.textContent = "Свободно";
+            currentRoom.textContent = "Занятий прямо сейчас нет";
+        }
+
+        const next = getNextClass();
+
+        if (next) {
+            const minutes = getMinutesUntil(next.start);
+
+            document.getElementById("nextClassTime").textContent =
+                next.start;
+
+            document.getElementById("nextClassName").textContent =
+                minutes > 0 && next.day === todayKey
+                    ? `${next.subject} · через ${minutes} мин`
+                    : `${next.subject} · ${next.room}`;
+        } else {
+            document.getElementById("nextClassTime").textContent =
+                "—";
+
+            document.getElementById("nextClassName").textContent =
+                "Занятий больше нет";
+        }
+
+        const uniqueSubjects =
+            new Set(schedule.map(item => item.subject));
+
+        document.getElementById("weekClasses").textContent =
+            `${schedule.length} занятий`;
+
+        document.getElementById("weekSubjects").textContent =
+            `${uniqueSubjects.size} предмета`;
+    }
+
+    /* =========================================================
+       FILTER
+    ========================================================= */
+
+    function renderFilter() {
+        const filter =
+            document.getElementById("subjectFilter");
+
+        const subjects =
+            [...new Set(schedule.map(item => item.subject))];
+
+        const previous = subjectFilter;
+
+        filter.innerHTML =
+            `<option value="all">Все предметы</option>`;
+
+        subjects.forEach(subject => {
+            const option =
+                document.createElement("option");
+
+            option.value = subject;
+            option.textContent = subject;
+
+            filter.appendChild(option);
+        });
+
+        filter.value =
+            subjects.includes(previous)
+                ? previous
+                : "all";
+    }
+
+    /* =========================================================
+       VIEW
+    ========================================================= */
+
+    function setView(view) {
+        currentView = view;
+
+        document
+            .querySelectorAll(".view-btn")
+            .forEach(button => {
+                button.classList.toggle(
+                    "active",
+                    button.dataset.view === view
+                );
+            });
+
+        if (view === "week") {
+            document.getElementById("weekView").style.display =
+                window.innerWidth <= 800
+                    ? "none"
+                    : "block";
+
+            document.getElementById("dayView").classList.remove(
+                "active"
+            );
+        } else {
+            document.getElementById("weekView").style.display =
+                "none";
+
+            document.getElementById("dayView").classList.add(
+                "active"
+            );
+        }
+
+        localStorage.setItem("schedule-view", view);
+
+        renderAll();
+    }
+
+    /* =========================================================
+       UTILITIES
+    ========================================================= */
+
+    function getPlural(number, one, few, many) {
+        const n = Math.abs(number) % 100;
+        const n1 = n % 10;
+
+        if (n > 10 && n < 20) return many;
+        if (n1 > 1 && n1 < 5) return few;
+        if (n1 === 1) return one;
+
+        return many;
+    }
+
+    function formatBreak(minutes) {
+        if (minutes < 60) {
+            return `${minutes} мин`;
+        }
+
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+
+        return mins
+            ? `${hours} ч ${mins} мин`
+            : `${hours} ч`;
+    }
+
+    /* =========================================================
+       THEME
+    ========================================================= */
+
+    function initializeTheme() {
+
+        const saved =
+            localStorage.getItem("schedule-theme");
+
+        const systemDark =
+            window.matchMedia &&
+            window.matchMedia(
+                "(prefers-color-scheme: dark)"
+            ).matches;
+
+        const theme =
+            saved ||
+            (systemDark ? "dark" : "light");
+
+        document.documentElement.dataset.theme =
+            theme;
+
+        updateThemeIcon();
+    }
+
+    function updateThemeIcon() {
+        const button =
+            document.getElementById("themeToggle");
+
+        const dark =
+            document.documentElement.dataset.theme === "dark";
+
+        button.innerHTML =
+            dark
+                ? `<i data-lucide="sun"></i>`
+                : `<i data-lucide="moon"></i>`;
+
+        lucide.createIcons();
+    }
+
+    document
+        .getElementById("themeToggle")
+        .addEventListener("click", () => {
+
+            const current =
+                document.documentElement.dataset.theme;
+
+            const next =
+                current === "dark"
+                    ? "light"
+                    : "dark";
+
+            document.documentElement.dataset.theme =
+                next;
+
+            localStorage.setItem(
+                "schedule-theme",
+                next
+            );
+
+            updateThemeIcon();
+        });
+
+    /* =========================================================
+       EVENTS
+    ========================================================= */
+
+    document
+        .getElementById("prevWeek")
+        .addEventListener("click", () => {
+            currentWeekOffset--;
+            renderAll();
+        });
+
+    document
+        .getElementById("nextWeek")
+        .addEventListener("click", () => {
+            currentWeekOffset++;
+            renderAll();
+        });
+
+    document
+        .getElementById("todayBtn")
+        .addEventListener("click", () => {
+            currentWeekOffset = 0;
+            selectedDay = getTodayKey();
+            renderAll();
+        });
+
+    document
+        .getElementById("searchInput")
+        .addEventListener("input", event => {
+            searchQuery = event.target.value.trim();
+            renderAll();
+        });
+
+    document
+        .getElementById("subjectFilter")
+        .addEventListener("change", event => {
+            subjectFilter = event.target.value;
+            localStorage.setItem(
+                "schedule-filter",
+                subjectFilter
+            );
+            renderAll();
+        });
+
+    document
+        .querySelectorAll(".view-btn")
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+                setView(button.dataset.view);
+            });
+
+        });
+
+    /* =========================================================
+       RENDER
+    ========================================================= */
+
+    function renderAll() {
+
+        document.getElementById("weekLabel").textContent =
+            formatWeekRange();
+
+        renderWeek();
+        renderDay();
+        renderMobileDays();
+        renderSummary();
+        renderFilter();
+
+        lucide.createIcons();
+    }
+
+    /* =========================================================
+       INITIALIZATION
+    ========================================================= */
+
+    function initialize() {
+
+        initializeTheme();
+
+        const savedView =
+            localStorage.getItem("schedule-view");
+
+        const savedFilter =
+            localStorage.getItem("schedule-filter");
+
+        if (savedView) {
+            currentView = savedView;
+        }
+
+        if (savedFilter) {
+            subjectFilter = savedFilter;
+        }
+
+        if (window.innerWidth <= 800) {
+            currentView = "day";
+        }
+
+        setView(currentView);
+
+        renderAll();
+
+        // Обновляем состояние текущего занятия
+        // каждую минуту.
+        setInterval(() => {
+            renderSummary();
+            renderWeek();
+            renderDay();
+        }, 60000);
+    }
+
+    window.addEventListener("resize", () => {
+        if (window.innerWidth <= 800 && currentView === "week") {
+            setView("day");
+        }
+    });
+
+    initialize();
+</script>
+
+</body>
+</html>
